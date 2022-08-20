@@ -49,9 +49,14 @@ and others that i have yet to do write ups on, if you have not seen my other wri
 
 C++, Go, Perl, and general fortran and math
 
-> C++ tutorial                            *  https://github.com/ArkAngeL43/Advanced-And-Secure-CXX <br>
-> GO Basics                               *  https://github.com/ArkAngeL43/Basics-Of-Go <br>
-> GO Advanced Security+                   *  https://github.com/ArkAngeL43/Go-Cyber-Weapons-Development <br> 
-> Fortran Notes                           *  https://github.com/ArkAngeL43/fortran-notes <br> 
-> Perl Cyber weapons                      *  https://github.com/ArkAngeL43/Perl-basics-and-cyber-weapons-development <br>
-> EXIF and Digital Forensics with images  *  https://github.com/ArkAngeL43/EXIF-Stegonography-and-image-injection <br> 
+ C++ tutorial                            *  https://github.com/ArkAngeL43/Advanced-And-Secure-CXX <br>
+
+GO Basics                               *  https://github.com/ArkAngeL43/Basics-Of-Go <br>
+
+GO Advanced Security+                   *  https://github.com/ArkAngeL43/Go-Cyber-Weapons-Development <br> 
+
+Fortran Notes                           *  https://github.com/ArkAngeL43/fortran-notes <br> 
+
+Perl Cyber weapons                      *  https://github.com/ArkAngeL43/Perl-basics-and-cyber-weapons-development <br>
+
+EXIF and Digital Forensics with images  *  https://github.com/ArkAngeL43/EXIF-Stegonography-and-image-injection <br> 
