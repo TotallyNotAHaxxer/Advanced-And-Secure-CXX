@@ -71,3 +71,24 @@ Recently i have just gotten a job for Authentication and systems development for
 
 This article is currently under development....
 
+
+# Application development and a talk about security
+
+In most of these tutorials i always have a say on security, thats because of my experience in the field of development in things such as legacy development, game cheat development, systems and auth development, and so on. Over the year or so i have been programming there is one thing i notice to actually be rare, that being security in applications especially games. The one thing i have always urged people the most during development especially when you are selling people your program or releasing it out to the public to use TO FOCUS ON SECURITY! stop wasting your time with frontend, you're main concern should be the security of an application and how it runs and its functionality. For example, right now i am working with a game called CS:GO and building cheat systems and auth systems for the game cheat application itself, this game cheat toolkit uses external tools things like player highlight and color and such. im actually going to split this talk on security into a small section about game cheating.
+
+> What is an external cheat 
+
+External cheats are simple, they are cheats that are not injected into the game code itself or the vulnerable DLL of the game
+
+> What is an internal cheat 
+
+simply internal cheats are unlike external injected into the vulnerable dll or game or executeable to make code run, with this you can mess with the games functions such as creativity, designs, hit boxes, players etc.
+
+> How does game cheating typically happen 
+
+game cheating is developed or happens when a hacker or developer comes across a vulnerability in the games files, and uses their programming skills to inject code into a process. For example in the game CS:Go you can get character highlight and seeing through walls and even aimbot by simply getting the games PID and memory location, taking memory values themselves for things like POS ( Position ) and injecting it into the memory. Here is an example i found online of a simple ESP (Extra sensory precision) seen below 
+
+
+<p align="center">
+  <img src="git/ESP.png" width="350" title="hover text">
+</p>
