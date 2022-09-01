@@ -99,4 +99,143 @@ most EXTERNAL cheats such as this very simple ESP is not picked up by AC ( Anti 
 
 Typically game developers put what i like to call digital duct tape on the problem. Simply all they do is just install ANTI CHEAT systems like `VAC` to help detect if someone is cheating or not. As said above however Cheats are often not seen or picked up by anti cheat systems if they are external, which means just slapping anti cheat is the most idiotic practice you can go about when trying to fix a vulnerability. Think of that like changing your IP when someone exploits your machine and already has access, it really does not do much but hang people off for a bit until they take 3 hours to think of a better solution to better exploit that program. In this example above you saw a cheat that was external ESP that was able to bypass the VAC system that the developers of CS:GO pulled in to the game to fix an issue that will never be actually fixed. It is of the most IMPORTANT that you make sure applications especially when programming in languages like C++ are constantly CONSTANTLY updated and staying secure and if a vulnerability pops up say a 0-DAY ( A vulnerability a hacker discovers before the developers do ) then you MUST get to fixing it right away if you want to keep you reputation.
 
+# Why c++? 
+
+**Warning: Despite this article relying on mainly research based facts on the C++ programming language, this section may include bias about the c++ programming language, this comes from experience**
+
+C++ is one of those languages that can actually benefit you during the proces sof working with memory, this is also why c++ is a popular choice for alot of DLL based exploitation or is used in memory intense applications. Not to mention that c++ as well is fast in itself. From my personal expereince c++ is a programming that can and cant be used for cyber security. This means that the language like all other 600+ programming languages have the possibility and application to be a programming language for cyber security. However! This does not mean i would choose c++ as a language for any form of cyber security, but given the fact this article will talk about offsensive and defensive cyber security with C++ to the basic and advanced leveles I have decided to steer away from views like that.
+
+# A basic understanding of C++
+
+You can think of c++ as a object orriented and more advanced version of c. C++ to begginers will come very frustrating that is given you do not have the patience to deal with compiler errors which you should have no matter the programming language. The c++ programming language is also despite it being a technical **Compiled** language has Object Oriented Programming or OOP for short. Which also means it uses classes and objects within its code, here is an example of a simple c++ class.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class OBJ_CLASS {
+     public:
+        std::string Data = "Data1";
+};
+```
+
+C++ has a few ways of implimenting classes in your code, you first use the `class` identifier to let the compiler know that you are initializing a class. Following that we put our class name in this case it is `OBJ_CLASS`, then we declare a keyword named `public:`. C++ has 3 ways of sectioning data within a class 
+
+| Class initation | Use case and definition |
+| --------------- | ----------------------- | 
+| public:         | All variables, functions, or data within or under this class tag will be considered a public data section. In other words you can access this from another part of the program | 
+| private:        | All variables, functions, or data within or under the private class tag are only visible to that class name |
+| friend          | Friend tells a given class set say class B that the current class ( class B ) can access variables and functions or other sections of data within say class A, it is used like `friend class A` |
+
+**Using the public variable**
+
+A example usage of the public class tag would look like this 
+
+```cpp 
+#include <iostream> 
+
+using namespace std;
+
+class A {
+    public: 
+         std::string Data = "Data2";
+};
+
+int main() {
+   A AA;
+   std::cout << AA.Data << std::endl;
+   return 0;
+}
+```
+
+so first things first under the public class tag we declare a variable of type `Standard string | std::string` which is named `Data` with a value of `Data2`. this means that any group of data outside of the class can access it, hence in our main function we first define our class name `A` and set it with a access variable which is `AA`. We will use the access variable `AA` to reach all the data within the public sector of the class. Hence `AA.Data`.
+
+Pretty simple right?
+
+**Using the private and public class tags together**
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class A {
+    private:
+      std::string Data = "somedata";
+    public:
+      void Call_Out() {
+          std::cout << Data << std::endl;
+      }
+};
+
+int main() {
+   A ClassA;
+   ClassA.Call_Out();
+   return 0;
+}
+```
+
+The class above keeps its name `A` but what changes is what we declare within the class, we use a rivate and public class tag telling the class that it has two sections of code. One which is private which will tell the compiler to disallow anything outside of that class to access it, and the other class tag which is public. Under the class tag public we define a void function called Call_Out(). If you are new to C or C++ or really any compiled language you will notice there is something new, that is void functions. Void functions are used in every single interpretted programming language ever, that is most of the time. Void functions are functions that run but do not return any data, In this case our void function will write to the STANDARD OUTPUT our private variable `Data` which can only be seen by that class. In our main block we declare the class name `A` followed by theaccess variable name `ClassA` and we use `ClassA` to call the void function `Call_Out();`
+
+** Using the friend and class keyword**
+
+Believe it or not the friend class tags are pretty easy to understand, its syntax is as follows.
+
+`friend class CLASSNAME;`
+
+In the example below i will define two classes and share variables between them 
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class A {
+   private:
+       std::string Data = "D1";
+   friend class B;
+};
+
+class B {
+   public:
+      A DT;
+      void Passer() {
+          std::cout << DT.Data << std::endl;
+      }
+};
+
+int main() {
+  B BCLASS;
+  BCLASS.Passer();
+}
+
+```
+
+First we define two classes class A and Class B. Class A has a private class tag defined inside of it that holds the variable name `Data` of data type standard string which has a value of `D1`. Again do note that no other class as of right now can see this variable. We then define outside of the private class the friend class tag and tell them to basically become friends with each other. 
+
+`friend class B` 
+
+before we can run our code we need to define class B, class B holds a public class tag which under that class tag has a function that is a void function named `Passer()`. The passer function will not return any data but rather output the private variable from the friend class A to the STANDARD OUTPUT.
+
+In order to print out the data we first need to define class A and assign it to a variable which in our case is `DT` under the void function we call std::cout with the variable `DT.Data`
+
+under our main function we do the same thing 
+
+```cpp
+int main() {
+    B BCLASS;
+    B.Passer();
+    return 0;
+}
+```
+
+Now where exactly do friend classes come in handy? The more advanced you get into C++ you will find the friend class feature very useful, especially if you work with classes and need to share things such as data type structures, variables, or constants together.
+
+# A more basic intro into c++
+
+I know the previous section was a bit advanced for begginers so lets just talk about the flat out basics, after all this tutorial was designed to go from basics to advanced and secure C++.
+
+> Include 
+
+When writing your programs in c++ 100% of the time you will find yourself having to import some lib,header file, or even a standard module within c++. In order to do this we use a thing called a 
 
