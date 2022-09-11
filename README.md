@@ -285,3 +285,92 @@ When using the include keyword like so `#include "someheader.h"` you are telling
 
 the preprocessor will look within this file path that we specified within our local directory. Ofcourse you can always include filepaths from your include directory but using `""` is more accurate to search for header files within the local directory or other source directories.
 
+# What is the C++ preprocessor
+
+Well what even is a preprocessor? A preprocessor within something such as C/C++ is in a sense a preforms actions prior to compiling the code, and we call this preprocessor by using the `#` symbol which is known as a preprocessor directive. Typically whenever you use the preprocessor directive in C++ you are usually using something such as 
+
+logic like if, else, elif, endif
+
+```cpp
+#if
+#else
+#elif
+#endif
+```
+
+include 
+
+```cpp
+#include
+```
+
+define 
+
+```cpp
+#define 
+```
+
+pragma 
+
+```cpp
+#pragma 
+```
+
+warnings, errors, or undefinitions 
+
+```cpp
+#warn 
+#error
+#undef
+```
+
+even macro logic such as 
+
+```cpp
+#ifdef
+#ifndef
+```
+
+These actually really come in handy alot especially if you want to check certian data before the code is fully compiled, or if you want to define errors or error functions etc. In a summary the preprocessor directive is used for when you want the compiler to run certian functions before code is compiled. Typically the preprocessor will run what is known as a preliminary operation. A preliminary operation is an operation ran by the compiler before code can be run such as compiling and mashing header files, parsing preprocessor directives and so on.
+
+# using preprocessor directives
+
+if you are writing code especially in projects which use things such as the windows API or using something such as Dear IMGUI you will most likely find yourself using preprocessor directives. But when exactly or how exactly will you know when to use a preprocessor directive outside of the `#include` statement. 
+
+> define keyword
+
+Lets first talk about the `#define` keyword, using define can sometimes be wacky that is if you do not run it or use it correctly in a perfect format. Like most programming languages it is suggested you use language or base features instead of defining a value that is an integer such as...
+
+```cpp
+#define c1 = 1
+```
+
+use 
+
+```cpp
+std::int c1 = 1;
+```
+
+The reason you should use language features such as std::int or std::string over something such as the define directive is mostly because of how honestly obscure some errors and issues you can run into can become. If you do not use the define keyword correctly such as in the use of a function or defining some complex piece of code you can cause a bunch of errors that will confuse you. If you can avoid the define function go for it but if you can not then you just have to make sure your code is accurate. Take this following code example from wikipedia of a demo use using the `#define` keyword.
+
+```cpp
+#define ABSOLUTE_VALUE( x ) ( ((x) < 0) ? -(x) : (x) )
+...
+int x = -1;
+while( ABSOLUTE_VALUE( x ) ) {
+...
+}
+```
+
+the person who wrote this code noted the following 
+
+```cpp
+/*
+It's generally a good idea to use extra parentheses when using complex macros. Notice that in the above example, the variable "x" is always within its own set of parentheses. This way, it will be evaluated in whole, before being compared to 0 or multiplied by -1. Also, the entire macro is surrounded by parentheses, to prevent it from being contaminated by other code. If you're not careful, you run the risk of having the compiler misinterpret your code.
+
+Because of side-effects it is considered a very bad idea to use macro functions as described above.
+*/
+
+int x = -10;
+int y = ABSOLUTE_VALUE( x++ );
+```
