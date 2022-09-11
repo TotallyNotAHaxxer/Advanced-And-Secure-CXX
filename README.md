@@ -374,3 +374,22 @@ Because of side-effects it is considered a very bad idea to use macro functions 
 int x = -10;
 int y = ABSOLUTE_VALUE( x++ );
 ```
+
+you should really only use the define keyword when you absolutely have to, and when you have no other option to do so. When writing C++ code you will often find yourself in a loop of trying to make the code multiplatform which is where the defined keyword might just help you. It will help you during the process of building for other platforms by storing system calls or system data that needs to be specified either at or before runtime.
+
+> Using the error keyword 
+
+the `#error` directive is exactly what it seems like. The error directive will halt or stop the compiler from compiling if it comes across this error to output this messages. This directive is typically used within a function or in a certian brick of code like so.
+
+```cpp
+#error ERROR_MESSAGE
+```
+
+> The warning directive 
+
+Just like the warning keyword if it is not clear enough if the compiler comes across a warning output so and so warning message, used as so 
+
+```cpp
+#warning warning_MESSAGE
+```
+
