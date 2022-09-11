@@ -319,7 +319,7 @@ pragma
 warnings, errors, or undefinitions 
 
 ```cpp
-#warn 
+#warning
 #error
 #undef
 ```
@@ -393,3 +393,101 @@ Just like the warning keyword if it is not clear enough if the compiler comes ac
 #warning warning_MESSAGE
 ```
 
+# Functions and data types 
+
+C++ works really well with functions as well as data types, how you can initialize struct's, integers and longs and even use mathematics as a core component within your programs. All of the time when you are writing a program in c++ you are going to be using a function, it is impossible to run a C++ program without a single function. But lets dive more into it. There are multtiple ways of defining and working with functions like spawning templates to simple void and integer based functions. A basic function by now you should know looks like the code block below.
+
+```cpp
+int MATHSTUFF(float x, float y) {
+// do math stuff 
+return moremathstuff;
+}
+```
+
+First you declare the data type a function will return or what a function is, then you define its arguments. The arguments each have their own data type unlike languages such as go which do not make this mistake if you are coming from a language like go. If you come from go let me explain, functions in go are written like so 
+
+```go
+func MathStuff(float x, y) (float, float) {}//.......
+```
+
+where you can make multiple arguments one data type and define the return data type of the function ourside of the arguments of the function and rather put them in `()` after you define the function arguments but before you start the brackets ( in this case ). You can NOT do that in c++, C++ makes you define the functions return type BEFORE the function is written then make you define the argument values with their own data type rather than being apart of one.
+
+Instead of doing 
+
+```go
+(float x, y)
+```
+
+you have to do 
+
+```c++
+(float y, float x) 
+```
+
+so the following go function 
+
+```go
+func Write_Out(string msg, hi) (string, string) {
+     return msg, hi
+}
+```
+
+would be written in c++ like so 
+
+```cpp
+std::string Write_Out(std::string msg, std::string hi) {
+    return msg, hi;
+}
+```
+
+and called like
+
+```cpp
+#include "header.h"
+
+int main() {
+    std::string a, b;
+    a, b = Write_Out("world", "hey");
+    std::cout << a << std::endl;
+    std::cout << b << std::endl;
+    
+}
+```
+
+if we were to change the values or arguments of the function to a go like style, we would get the following compiler errors 
+
+```
+header.h:5:40: error: ‘hi’ has not been declared
+    5 | std::string Write_Out(std::string msg, hi) {
+      |                                        ^~
+header.h: In function ‘std::string Write_Out(std::string, int)’:
+header.h:6:17: error: ‘hi’ was not declared in this scope
+    6 |     return msg, hi;
+      |                 ^~
+main.cpp: In function ‘int main()’:
+main.cpp:5:31: error: invalid conversion from ‘const char*’ to ‘int’ [-fpermissive]
+    5 |     a, b = Write_Out("world", "hey");
+      |                               ^~~~~
+      |                               |
+      |                               const char*
+In file included from main.cpp:1:
+header.h:5:40: note:   initializing argument 2 of ‘std::string Write_Out(std::string, int)’
+    5 | std::string Write_Out(std::string msg, hi) {
+      |                       
+```
+
+hi is an undeclared variable and does not name a type, it is not implicit or explicit or anything to do with implicit typing so it simply just does not exist which will also cause an error saying that `invalid conversion from const char* to int` because we just tried to name two variables one type but `hi` was not declared or names a type. If you pop open VSCODE and call the function like so 
+
+```cpp
+    a, b = Write_Out("world", "hey");
+```
+
+you will see when you call the function and auto fill it vscode will automate to 
+
+```cpp
+    a, b = Write_Out(int msg, int hi);
+```
+
+the autofill for some reason will look like this 
+
+![alt text](git/.png)
