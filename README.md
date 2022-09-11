@@ -504,4 +504,8 @@ An example of this is one of the development teams i work on where we develop ga
 
 we need to use the multibyte character set as well as use C++20 to fit it with current versions and even regulate the architecture we are compiling for along with the phases such as debug or release or are we using custom linker options and what not. The code you write in C++ along with the style and the functions you use change throughout the versions and it is imparitive you understand what version you are programming for, what app you are using or if you are uisng GCC/G++ or are using using the MSVSC C++ compiler or are you using C++ with a framework like the .NET framework that works along side of C#. Again when you write standard C++ code nothing should really change but it starts to matter when you develop enterprise or corperate level programs and tools or even tools you want people to use on multiple operating systems.
 
+it also may not seem like it and this is worth mentioning but when writing C++ the way you program and use functions will depend on the security of your code, if you are using a deprecated function from a earlier or previous version of C++ you may be actually causing vulnerabilities within your code. Some features from C++ are added and taken away mainly for security purposes, and when people bring those back it just makes their code vulnerable to something wether its PROC/DLL injection or RCE or something like that. Most vulnerabilities within binaries will result in binary exploitation or something along those lines. So the end goal of this talk being to always understand and know exactly what you are doing and what the differences are of the types. This actually brings us into our next segment 
+
+# Writing C++20 with MSVSC 
+
 
