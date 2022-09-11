@@ -491,3 +491,13 @@ you will see when you call the function and auto fill it vscode will automate to
 the autofill for some reason will look like this 
 
 ![alt text](git/vs.png)
+
+# A small talk on writing C++ code 
+
+Before we hop into the advnaced I want to let you know something, programming C++ anywhere anytime with any operating system is possible. However people often forget that C/C++/C#/Objective-C/F# and other languages like that are VERY VERY specific programming languages. Everything you write could determine a different focus level or type of programming. When using C++ you have to keep in mind that this language has practically changed more than 20 times and has over 5 revisions of the language with a current state of working on a C++23. C++ has many different styles, that is why at the beggining of this tutorial i specified that this tutorial is for C++20 ONLY some of the code we will be writing or you will see will be C++11 but that is just due to the library that we are going to be using but other than this it will be purely c++20.
+
+C++ depending each version the styles change so do the features as well as the security and even the operations. Most of your day to day things such as functions and data types and mathematics stay the same your everyday `pow` and `hypot` functions stay the same but when you start writing more advanced C++ applications the more you will have to write in a specific characterset such as MultiByte or for a specific architecture such as X86 or X64 and for a specific operating system such as Windows or Linux or IOS. Even when you get deeper with C/C++ you will notice when building GUI's you may even need to work with a specific CPU type. All of this matters, despite C++ being a high level language it still has deep ties like any language to the memory and what not. The only difference between something such as python and ruby vs c++ and c is C++ will focus more with memory and its style and features than any other language you might come across in the interpretted language realm.
+
+An example of this is one of the development teams i work on where we develop game exploits for games such as Rust, CSGO and other games amongst that list. These games are written for different operating systems and used advanced libs such as DEAR IMGUI which call depend on the operating system you are on, the way we read and write processes using an OS like API or weather its our own module differs what charset or c++ version we are using. For something like the game cheat below which is a simple ESP using the windows API 
+
+
