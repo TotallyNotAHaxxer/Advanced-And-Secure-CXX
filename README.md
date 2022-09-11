@@ -500,4 +500,8 @@ C++ depending each version the styles change so do the features as well as the s
 
 An example of this is one of the development teams i work on where we develop game exploits for games such as Rust, CSGO and other games amongst that list. These games are written for different operating systems and used advanced libs such as DEAR IMGUI which call depend on the operating system you are on, the way we read and write processes using an OS like API or weather its our own module differs what charset or c++ version we are using. For something like the game cheat below which is a simple ESP using the windows API 
 
+![ESP_CHEAT](git/esp_example.png)
+
+we need to use the multibyte character set as well as use C++20 to fit it with current versions and even regulate the architecture we are compiling for along with the phases such as debug or release or are we using custom linker options and what not. The code you write in C++ along with the style and the functions you use change throughout the versions and it is imparitive you understand what version you are programming for, what app you are using or if you are uisng GCC/G++ or are using using the MSVSC C++ compiler or are you using C++ with a framework like the .NET framework that works along side of C#. Again when you write standard C++ code nothing should really change but it starts to matter when you develop enterprise or corperate level programs and tools or even tools you want people to use on multiple operating systems.
+
 
