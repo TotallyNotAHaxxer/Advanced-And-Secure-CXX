@@ -593,7 +593,21 @@ this is NOT supposed to be there, there should be normal buffers there but there
 
 # Usign GDB/GEF to debug and locate where a vulnerability is comming from 
 
-So in this next case  we have a file which is named pcap.h, inside of pcap.h is a function from the offical c++ packet crafing, parsing, and formatting library `PcapPlusPlus`. Within the function there is data that is outputted when a HTTP layer if found within the packet that is thrown as an argument to the function. The program outputs data such as the HTTP URI, the HTTP host, the HTTP useragent but then before it can output the HTTP cookie there is for some reason a segment violation code that happens, but is it BOF? BOF vulnerabilities may not just be in simple code forms such as the code example above they me even come in more advanced forms. The following using a PCAPPLUSPLUS library to capture packets. The following program you will see might be a bit hard to understand if you are a begginer but i will explain it. Basically the function i am going to show here is a function that takes a packet and parses the HTTP layer of it using the PcapPlusPlus C++ packet capture and parsing library. The code we get is SIGSEV when we run it through GDB/GEF.
+So in this next case  we have a file which is named pcap.h, inside of pcap.h is a function from the offical c++ packet crafing, parsing, and formatting library `PcapPlusPlus`. Within the function there is data that is outputted when a HTTP layer if found within the packet that is thrown as an argument to the function. The program outputs data such as the HTTP URI, the HTTP host, the HTTP useragent but then before it can output the HTTP cookie there is for some reason a segment violation code that happens, but is it BOF? 
+
+Before we can go on the only way we can really figure this out is by using something known as GDB. GDB stands for GNU Debugger, GDB is a program that is typically used by either code / program engineers or cyber security specialists to scout out a program such as a binary to understand what happens within a program. GDB is used ALOT within the reverse engineering community to reverse engineer or exploit binary files such as the one we are about to do recon on that is vulnerable to BOF. Right now within this section we will be only doing the basics such as running and using programs and scouting them ofc. We are going to run gdb but first things first we need to tell gdb the program or in our case the binary to run, to do this we run the following command.
+
+`gdb ./main`
+
+our main file is the binary filename 
+
+then we need to run it and since our binary requires a filename or pcap filepath we run the following 
+
+`run /home/xea43p3x/Desktop/Projects/frizz/src/PCAP/Pcap_Examples/'HTTP - JPG Download.pcap'`
+
+when we run the file we will get a code from GDB saying that there was a SEGMENT VIOLATION, but why?
+
+BOF vulnerabilities may not just be in simple code forms such as the code example above they me even come in more advanced forms. The following using a PCAPPLUSPLUS library to capture packets. The following program you will see might be a bit hard to understand if you are a begginer but i will explain it. Basically the function i am going to show here is a function that takes a packet and parses the HTTP layer of it using the PcapPlusPlus C++ packet capture and parsing library. The code we get is SIGSEV when we run it through GDB/GEF.
 
 ```cpp
 void DATA_HTTP(pcpp::Packet RP) {
@@ -663,7 +677,245 @@ all this is is just input and output and streams. Where exactly and why exactly 
 ![gef example of BOF 1 PCPP](git/GEF_PCPP_BOF_1.png)
 ![Gef Example of BOF 2 PCPP](git/GEF_PCPP_BOF_2.png)
 
-The first screenshot shows us running the program with a very simple packet capture from tcpdump. GEF runs the program 
+In the first image we start our code by using the GDB command 
+
+`run /home/xea43p3x/Desktop/Projects/frizz/src/PCAP/Pcap_Examples/'HTTP - JPG Download.pcap'`
+
+and once we run the program it outputs us this message 
+
+```
+Starting program: /home/xea43p3x/Desktop/Projects/cpp_pcap/main /home/xea43p3x/Desktop/Projects/frizz/src/PCAP/Pcap_Examples/'HTTP - JPG Download.pcap'
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+HTTP URI: /images/layout/logo.png
+HTTP host: packetlife.net
+HTTP user-agent: Wget/1.12 (linux-gnu)
+Buffer overflow should happen here
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00005555555b70f5 in pcpp::HeaderField::getFieldValue[abi:cxx11]() const (this=0x0) at src/TextBasedProtocol.cpp:619
+619		if (m_ValueOffsetInMessage != -1)
+```
+
+right away nothing but a few miliseconds of running the program we already get errors, we first see the output from the script which is seen here
+
+```
+HTTP URI: /images/layout/logo.png
+HTTP host: packetlife.net
+HTTP user-agent: Wget/1.12 (linux-gnu)
+Buffer overflow should happen here
+```
+
+and ofc we see the message where we know the buffer overflow vulnerability will happen which happens here 
+
+```
+Program received signal SIGSEGV, Segmentation fault.
+0x00005555555b70f5 in pcpp::HeaderField::getFieldValue[abi:cxx11]() const (this=0x0) at src/TextBasedProtocol.cpp:619
+619		if (m_ValueOffsetInMessage != -1)
+```
+
+This time instead of getting a warning or error from GEF saying that it was within our call it is a traceback to a file within the PcapPlusPlus library within the file `TextBasedProtocol.cpp` on line 619. But before we go onto scout exactly why this vulnerability is happening within our code lets look below
+
+GDB throws the error
+
+```
+~/.gdbinit-gef.py:2488: DeprecationWarning: invalid escape sequence '\A'
+~/.gdbinit-gef.py:2488: DeprecationWarning: invalid escape sequence '\þ'
+```
+
+but wait this is comming from the offical `gdbinit-gef.py` file but why did we not get this within our other BOF which was well over a few hundred characters? The most simple conclusion or hypothesis to this would be was the BOF so bad within our program it actually caused errors within GDB either injecting GDB or overflowing into that memory segment which GDB was running the program on? You would think this is a simple python deprecation warning but lets look at the `~/.gdbinit-gef.py` file and go to line 2488.
+
+we have the following python code from line 2478 -> 2497
+
+```python
+
+
+def read_cstring_from_memory(address, max_length=GEF_MAX_STRING_LENGTH, encoding=None):
+    """Return a C-string read from memory."""
+
+    if not encoding:
+        encoding = "unicode_escape"
+
+    char_ptr = cached_lookup_type("char").pointer()
+
+    length = min(address|(DEFAULT_PAGE_SIZE-1), max_length+1)
+    try:
+        res = gdb.Value(address).cast(char_ptr).string(encoding=encoding, length=length).strip()
+    except gdb.error:
+        res = bytes(read_memory(address, length)).decode("utf-8")
+
+    res = res.split("\x00", 1)[0]
+    ustr = res.replace("\n","\\n").replace("\r","\\r").replace("\t","\\t")
+    if max_length and len(res) > max_length:
+        return "{}[...]".format(ustr[:max_length])
+
+    return ustr
+```
+
+so lets look at whats on line 2488 where we were getting the error. On line 2488 it shows the following line below 
+
+```python
+        res = gdb.Value(address).cast(char_ptr).string(encoding=encoding, length=length).strip()
+```
+
+but wait there is no character here? This is just parsing values, stripping them and running it through an encoding value from a gdb class. So lets really go back to why this traceback was SOOOOOOOO massive, and what went wrong. Clearly GDB was not facing a deprecation error but i still was n ot ready to accept that the hypthesis i made was even close to correct, so i went on. Lets move to wireshark and open this packet and see if maybe something happened when parsing the packet that happened within the program affecting gef, maybe something within the body or even something within the actual packet. Look at the screenshot below which shows wireshark packet analysis on the exact line and the exact first HTTP get request that is found by our C++ program using PcapPlusPlus
+
+![Example Wireshark packet](git/Wireshark_Capture.png)
+
+Hmmm? It seems as if there is data within the packet but no characters even close to resembling what exactly is going on within GDB, why did GDB error out or not error out but rather give a warning of deprecation?
+
+so that still leaves the possible thought that we may have overflowed so far by parsing the packets within that layer or sections of that packet within that layer so far that we may have just slipped data into a process. This of course could have been GDB but that may be off the table because i can not find a similar error message online.
+
+GDB goes on but sticks to the file, it will dump the hexes and addresses of what and where it went wrong within our code seen here in assembly 
+
+```asm
+$rax   : 0x0               
+$rbx   : 0x00007fffffffd9a0  →  0x0000000000000000
+$rcx   : 0x636f6f6b6f6b6965 ("eikokooc"?)
+$rdx   : 0x000055555574f1e0  →  0x0000000000000001
+$rsp   : 0x00007fffffffd860  →  0x00007fffffffd9a0  →  0x0000000000000000
+$rbp   : 0x00007fffffffd9a0  →  0x0000000000000000
+$rsi   : 0x0               
+$rdi   : 0x00007fffffffd990  →  0x000055555574f370  →  "Wget/1.12 (linux-gnu)"
+$rip   : 0x00005555555b70f5  →  <pcpp::HeaderField::getFieldValue[abi:cxx11]()+0> cmp DWORD PTR [rsi+0x20], 0xffffffff
+$r8    : 0xd               
+$r9    : 0x00007fffffffd900  →  0x00007f0074736f68 ("host"?)
+$r10   : 0x0               
+$r11   : 0x246             
+$r12   : 0x00007fffffffd990  →  0x000055555574f370  →  "Wget/1.12 (linux-gnu)"
+$r13   : 0x000055555571f3e0  →  0x0000555555714e40  →  0x000055555566c2f0  →  <std::basic_ostream<char,+0> lea rax, [rip+0xa8b31]        # 0x555555714e28 <_ZTVSo>
+$r14   : 0x00007fffffffd8f0  →  0x00007fffffffd900  →  0x00007f0074736f68 ("host"?)
+$r15   : 0x0000555555720660  →  0x0000555555711ff0  →  0x0000555555621ac0  →  <std::ctype<char>::~ctype()+0> lea rax, [rip+0xf0519]        # 0x555555711fe0 <_ZTVSt5ctypeIcE>
+$eflags: [zero carry PARITY adjust sign trap INTERRUPT direction overflow RESUME virtualx86 identification]
+$cs: 0x0033 $ss: 0x002b $ds: 0x0000 $es: 0x0000 $fs: 0x0000 $gs: 0x0000 
+```
+
+Within this section of text we see where data was given such as the host and the useragent represented by the following address 
+
+`0x00007fffffffd990  →  0x000055555574f370  →  "Wget/1.12 (linux-gnu)"`
+
+lets look a bit further down in the stack 
+
+```
+0x00007fffffffd860│+0x0000: 0x00007fffffffd9a0  →  0x0000000000000000	 ← $rsp
+0x00007fffffffd868│+0x0008: 0x00007fffffffd9a0  →  0x0000000000000000
+0x00007fffffffd870│+0x0010: 0x00007fffffffd990  →  0x000055555574f370  →  "Wget/1.12 (linux-gnu)"
+0x00007fffffffd878│+0x0018: 0x000055555574ef60  →  0x000055555570d558  →  0x00005555555b0420  →  <pcpp::Layer::getDataPtr(unsigned+0> mov rax, QWORD PTR [rdi+0x8]
+0x00007fffffffd880│+0x0020: 0x000055555571f3e0  →  0x0000555555714e40  →  0x000055555566c2f0  →  <std::basic_ostream<char,+0> lea rax, [rip+0xa8b31]        # 0x555555714e28 <_ZTVSo>
+0x00007fffffffd888│+0x0028: 0x000055555558e604  →  <DATA_HTTP(pcpp::Packet)+804> mov rdx, QWORD PTR [rsp+0x108]
+0x00007fffffffd890│+0x0030: 0x00007fffffffd900  →  0x00007f0074736f68 ("host"?)
+0x00007fffffffd898│+0x0038: 0x00007fffffffd940  →  "user-agent"
+```
+
+woah! We again see that damn 55555 gex! the one where our code errored out which was represented here 
+
+** ABOVE IN REGISTERS **
+
+```
+$rip   : 0x00005555555b70f5  →  <pcpp::HeaderField::getFieldValue[abi:cxx11]()+0> cmp DWORD PTR [rsi+0x20], 0xffffffff
+```
+
+**BELOW IN STACK**
+
+```
+0x00007fffffffd878│+0x0018: 0x000055555574ef60  →  0x000055555570d558  →  0x00005555555b0420  →  <pcpp::Layer::getDataPtr(unsigned+0> mov rax, QWORD PTR [rdi+0x8]
+0x00007fffffffd880│+0x0020: 0x000055555571f3e0  →  0x0000555555714e40  →  0x000055555566c2f0  →  <std::basic_ostream<char,+0> lea rax, [rip+0xa8b31]        # 0x555555714e28 <_ZTVSo>
+0x00007fffffffd888│+0x0028: 0x000055555558e604  →  <DATA_HTTP(pcpp::Packet)+804> mov rdx, QWORD PTR [rsp+0x108]
+```
+
+it seems like our code is becoming broken or getting close to breaking when we see the 0x00005555571f3e0 register. the debugger goes onto then dumping the data within the code file such as the following 
+
+```cpp
+    614	 }
+    615	 
+    616	 std::string HeaderField::getFieldValue() const
+    617	 {
+    618	 	std::string result;
+ →  619	 	if (m_ValueOffsetInMessage != -1)
+    620	 		result.assign((const char*)(((HeaderField*)this)->getData() + m_ValueOffsetInMessage), m_FieldValueSize);
+    621	 	return result;
+    622	 }
+    623	 
+    624	 bool HeaderField::setFieldValue(std::string newValue)
+```
+
+keep in mind this is directly from the file where GDB found a error, i can assume given the way this is programmed that this is deprecated and may actually be only compiled with a specific style and version of C++. but line 619 as said below 
+
+```
+0x00005555555b70f5 in pcpp::HeaderField::getFieldValue[abi:cxx11]() const (this=0x0) at src/TextBasedProtocol.cpp:619
+619		if (m_ValueOffsetInMessage != -1)
+~/.gdbinit-gef.py:2488: DeprecationWarning: invalid escape sequence '\A'
+~/.gdbinit-gef.py:2488: DeprecationWarning: invalid escape sequence '\þ'
+```
+
+with address 
+
+`0x00005555555b70f5`
+
+same as seen here within the register dump.
+
+```
+$rip   : 0x00005555555b70f5  →  <pcpp::HeaderField::getFieldValue[abi:cxx11]()+0> cmp DWORD PTR [rsi+0x20], 0xffffffff
+```
+
+Looking at this we can now find the source of the vulnerability within the source code which in fact is partialy on our part the developers of the script but also the programmers of the library. If we open the file we see the following function 
+
+```cpp
+std::string HeaderField::getFieldValue() const
+{
+	std::string result;
+	if (m_ValueOffsetInMessage != -1)
+		result.assign((const char*)(((HeaderField*)this)->getData() + m_ValueOffsetInMessage), m_FieldValueSize);
+	return result;
+}
+```
+
+Within this code brick we find a function which is defined as a return type of `std::string` which uses their own class called `HeaderField` to call a function named `getFieldValue()` which ends with the const or constant keyword. Under the brackets we see a variable named result of data type string which is followed by a check. This if statement is standard logic, it checks if the value `m_ValueOffsetInMessage` does not equal -1, and if it does not equal -1 then it assigns the result value like so 
+
+```cpp
+result.assign((const char*)(((HeaderField*)this)->getData() + m_ValueOffsetInMessage), m_FieldValueSize);
+```
+
+but if else it returns empty, but why should you do this? The developers really are not doing anything but checking if a value is empty, but the reason that this is dangerous is because they are indexing an offset with `-1` typically an offset or value offset that is within a message should never be -1 but if it is instead of returning an empty result there can be more than a million things you can do such as filling that result with `error: value soandsovalue was empty could not grab field data` or something similar and even used more advanced techniques to prevent buffer overflows. So here is something i wanted to do, within this project i wanted to look at the change logs or view the blame file and i can most certianly say my hypthesis of it not being us but rather being a project developer issue is correct using GDB i was able to spot the issue within the file. 
+
+Lets look at the change log to this file / blame 
+
+here is a few screenshots within the blame file, and i want you to really pay attention and read the left side of the commits.
+
+![Blame SS 1](git/PCPP_BLAME_1.png)
+![Blame SS 2](git/PCPP_BLAME_2.png)
+
+When looking at these commits we can now be almost 100% sure it is a developer mistake infact actually 100% accurate, this sure can be fixed by us the developers simply by making a check to see if the value is empty. But with the way they do this and they operate the code we can not fix it, when i was writing a project using this library it helped alot but i could not get code to work and run well when i kept getting a segmentation fault even when i was checking if the value was NULL and writing advanced functions talking on that. But i actually had to remove the following function completely 
+
+```cpp
+		<< "HTTP cookie: " << httpRequestLayer->getFieldByName(PCPP_HTTP_COOKIE_FIELD)->getFieldValue() << std::endl;
+```
+
+if you remove this line and run it through GDB you get 
+
+```
+gef➤  run /home/xea43p3x/Desktop/Projects/frizz/src/PCAP/Pcap_Examples/'HTTP - JPG Download.pcap'
+Starting program: /home/xea43p3x/Desktop/Projects/cpp_pcap/main /home/xea43p3x/Desktop/Projects/frizz/src/PCAP/Pcap_Examples/'HTTP - JPG Download.pcap'
+
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+HTTP URI: /images/layout/logo.png
+HTTP host: packetlife.net
+HTTP user-agent: Wget/1.12 (linux-gnu)
+[Inferior 1 (process 24002) exited normally]
+```
+
+Which shows us there might actually be something more going on here, maybe there was an error with the value HTTP cookie, or the way they are parsing this within another function. GDB may show us sometimes if not all the time where a program went wrong especially when working with C++ however it can even go deeper than that. In our case our program is now vulnerable to buffer overflow which within these last two sections is my point. Alot of developers do not scout code enough and it is clear with the amount of times these developers made this project not once did they run it through something such as GDB to debug the program because if they would have they may have been able to prevent the amount of stack overflows, buffer overflows, heap buffer overflows, memory leaks and so on from there. It is imparitive that when you write code as big as this and people widely use it such as a quarter or even a smaller amount of people inside of a community such as the hacking community. Later on in this article i will definitely talk about GDB and exploiting things such as games and files by using GDB as a recopn tool.
+
+> Summary of these two sections 
+
+To sum up these two sections there are a few things i want you to ALWAYS and i mean ALWAYS remember. When writing code in C++ or any language alike it is imperative you understand how important security is not just to you're code base but even in your everyday life. If you release a game cheat or a exploit or malware that will be hosted on someones computer you do NOT want them to see or run something that is vulnerable because someone such as myself or other people who have jobs to tell them to do this kind of thing will exploit your binary or your program EXTREMELY fast. Especially if its obvious that the program is interupting when it should not. The second thing i want you to note is to NEVER trust third party libraries, some ofthem are built by developers and developers make mistakes which is okay its apart of the learning journey but just because it is developed by a popular organization such as google, facebopok or even uber does NOT mean it is safe. Code is often mistaken as something that does not need to be looked after but that is why we have so much vulnerabilities within the systems and services we all use on a day to day life, i seriously encourage you to read again into security on both ends.The last thing to note is to always run your code through something such as GDB/GEF before you publish your code not only does it provide good background knowledge and experience but it can also give you a reason to fix a bug say if a certian function crashes. Or even later as you will see within another section on developing graphical user interfaces with C++ debugging programs that are crashing randomly. GDB and GEF come in handy so much, they really do and despite it being a GNU only thing there are still debuggers out there such as ones built into MSVSC that can help debug and compile your code with or without errors ( sometimes not all the time ).
+
+
+
+
 
 
 
