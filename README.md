@@ -508,4 +508,165 @@ it also may not seem like it and this is worth mentioning but when writing C++ t
 
 # Writing C++20 with MSVSC 
 
+If you are going to write C++ code especially for something as big as exploitation or application that require constant lookouts and debugs and even good actions, it might be time for you to consider using Microsoft Visual Studio Code IDE (MSVSC). MSVSC has become one of my best friends ever since I restarted C++ development, you have so much oppurtinity to use templates, code loaders, api's and even frameworks such as the .NET framework. When developing C++ you also have a variety of options such as debug or release modes, x86 or x64, linker options such as subsystem faults and even down to characterset customization.
+
+> What is the difference between debug and release?
+
+Remember how i was just talking about how the style depends on your compiler flags and how you run and compile your code using different character sets? Even how when you may write C++ code and have to rewrite it because you have to use a different C++ characterset? Well this is where release and debug come in handy. Debug is basically a option that allows the compiler to log debug information within the compiled files which in the future allows you to be able to debug you're program easy. While release is the complete oposite and actually allows for optimizations to be made to the program. When you write C++ and use different modes (Debug/Release) you will end up having to change your macros and preprocessor definitions or directives differently. A very common mistake people make is creating their code first before configuring your options such as the language version or the linker settings and even the debug or release modes. 
+
+If you do not configure these correctly and say have your options or modes on debug instead of release you can get errors suh as runtime library errors, macro errors, optimizations impacts, and even defined variable errors which if you do not know will cause a bunch of errors during compile time sometimes so large the console can not even take it. A good thing to note about MSVSC is that when you develop or write code you can easily see the errors that are happening during compile / runtime ( if debug ) when you choose to execute your program rather than a million buffer errors which are just chained off the other errors.
+
+> Character sets 
+
+With character sets this really depends, when you are using MSVSC and if you know compiler options you may or may not be using character sets, but why does this matter? If it was not clear enough C++ code can be written a million different ways, now just change up the character set and look at the differences. The way code compiles with a different character set matters because of the way it compiles and runs certian symbols and keywords. For example if you use the WinAPI you will notice if you have a character set not set to something such as multibyte you may not be able to use the WinAPI in some cases due to how the code was written for `not set` characterset based options. Alot of your main code will be changed when it comes to code Macros, if you take something such as the windows API and use alot of the functions in it to build say a GUI and some other functions then switch your character set you will recieve errors from the compiler. Again as noted above it is imperative that you do a deep dive on how this work as this tutorial / article will not take a deep dive into it, but i surely hope you do yourself to understand why and why not you should or should not use a certian character set.
+
+> Summary of this section 
+
+Most of the code we write will be simple until we deep dive into cyber security and other aspects alike. From here on I will be using g++  to compile c++20 code and be running on a linux system again that is until i reach the API section of the program but for now we will not be using that, again when the time comes it will come. To sum up MSVSC is a great tool especially if you do not have a linux system or are more familiar with windows, it makes compiling code, running code, debugging code, setting compile flags and tools and including things such as header files and even source files alot easier and even organizes you're files.
+
+# Using g++ on linux
+
+Before we finally move onto writing more code and getting into a point of advanced code sets and security sets, I would like to touch on G++ and using g++ to your advantage. g++ for those who do not know is like gcc but for c++ its simply just a compiler for linux. There are a bunch of flags you can use that are configured to be specified towards your build such as the following.
+
+> `-o`
+
+if you do not know `-o` is used to specify an output name of the executeable file so you would use this as such 
+
+`g++ main.cpp -o main_exec`
+
+which our compiled code of main.cpp becomes `main_exec.exe/elf/whatever_executeable_format_we_are_building_for`
+
+within this tutorial we will only be using smaller flags rather than jumping into setting enviroment variables and what not since mainly our programs will be consiting of header files or single source.cpp files
+
+# Understanding security in c++
+
+So as you should know there are vulnerabilities out there that exist inside of files weather they occure during or are developed before they still exist. And as explained in the intro they come in all shapes and sizes, anything as small as a DLL injection vulnerability down to BOF ( Buffer Over Flow ). But how exactly do these become say existent? Well most modern day compilers can catch vulnerabilities, MSVSC's compiler will catch code such as the following C++ program.
+
+```cpp
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+ 
+int main(int argc, char *argv[])
+{
+ 
+       // Reserve 5 byte of buffer plus the terminating NULL.
+       // should allocate 8 bytes = 2 double words,
+       // To overflow, need more than 8 bytes...
+       char buffer[5];  // If more than 8 characters input
+                        // by user, there will be access
+                        // violation, segmentation fault
+ 
+       // a prompt how to execute the program...
+       if (argc < 2)
+       {
+              printf("strcpy() NOT executed....\n");
+              printf("Syntax: %s <characters>\n", argv[0]);
+              exit(0);
+       }
+ 
+       // copy the user input to mybuffer, without any
+       // bound checking a secure version is strcpy_s()
+       strcpy(buffer, argv[1]);
+       printf("buffer content= %s\n", buffer);
+ 
+       // you may want to try strcpy_s()
+       printf("strcpy() executed...\n");
+ 
+       return 0;
+}
+```
+
+this is quite a small BOF example, basically we have a buffer limit which is 5, if the argument count is LESS than two which means we only specified the file without any arguments or our command looks like `./main` when it should look like `./main AAAA`. Then we do NOT check the limit of characters we use a string copy statement which will take the amount of arguments we made or rather the arguments we did make and copy them into the buffer. We go wrong by simply not checking or creating a char limit. Any guess as to what will happen to the program when we run it through GDB with 5 A's? Lets run it through GDB and see this is the output we get from GEF/GDB 
+
+![gef example](git/gef_example.png)
+
+we see that the program runs fine yeah okay thats good, but what exactly happens when we run the program and go OVER the buffer limit which is NOT checked.
+
+![gef example of BOF](git/gef_BOF_example.png)
+
+woah what the f! whats all of this???? we simply ran the program using the command `run` followed by 139 capital letters which were copied exactly into the buffer using a strcpy statement within C++. When we overflowed that buffer we went over the limit and caused what is known as a buffer overflow. We basically broke passed the allocated memory because we were not able to check this. If we truly wanted to we can program now create ASSEMBLER based shellcode and execute a shell if we were to do more recon on the binary, right now that simply is beyond the scope, later we will be getting into it though! Mostly this will be caught by a compiler typically, in this sense G++ did NOT find an issue but some other compilers may in fact catch issues like that based on templates or common occurences. However you notice how there is a giant line of hex seen here 
+
+`$rbp   : 0x4141414141414141 ("AAAAAAAA"?)`
+
+this is NOT supposed to be there, there should be normal buffers there but there is not, and this is exactly where our buffer overflow landed, and the memory address those A's allocated. Keep this in mind when we get into exploiting BOF on a more secure topic. This will bring us into our next session honestly i did not plan to make this its own section but it became so long that i needed to make it a section.
+
+# Usign GDB/GEF to debug and locate where a vulnerability is comming from 
+
+So in this next case  we have a file which is named pcap.h, inside of pcap.h is a function from the offical c++ packet crafing, parsing, and formatting library `PcapPlusPlus`. Within the function there is data that is outputted when a HTTP layer if found within the packet that is thrown as an argument to the function. The program outputs data such as the HTTP URI, the HTTP host, the HTTP useragent but then before it can output the HTTP cookie there is for some reason a segment violation code that happens, but is it BOF? BOF vulnerabilities may not just be in simple code forms such as the code example above they me even come in more advanced forms. The following using a PCAPPLUSPLUS library to capture packets. The following program you will see might be a bit hard to understand if you are a begginer but i will explain it. Basically the function i am going to show here is a function that takes a packet and parses the HTTP layer of it using the PcapPlusPlus C++ packet capture and parsing library. The code we get is SIGSEV when we run it through GDB/GEF.
+
+```cpp
+void DATA_HTTP(pcpp::Packet RP) {
+    	pcpp::HttpRequestLayer* RL = RP.getLayerOfType<pcpp::HttpRequestLayer>();
+        if (RL == NULL) {
+		    return;
+        } else {
+            std::cout << "HTTP URI: " << RL->getFirstLine()->getUri() << std::endl;
+
+            std::cout
+                << "HTTP host: " << RL->getFieldByName(PCPP_HTTP_HOST_FIELD)->getFieldValue() << std::endl
+                << "HTTP user-agent: " << RL->getFieldByName(PCPP_HTTP_USER_AGENT_FIELD)->getFieldValue() << std::endl
+                << "Buffer overflow should happen here" << std::endl
+                << "HTTP cookie: " << RL->getFieldByName(PCPP_HTTP_COOKIE_FIELD)->getFieldValue() << std::endl;
+        }
+}
+```
+
+first the function is defined as a void function, it simply just does not return any data. Under that we use the `pcpp::HttpRequestLayer* RL = RP.getLayerOfType<pcpp::HttpRequestLayer>();` to assign a variable `RL` to define the request layer of the packet or of the packet. We then check if it is NULL or emptu and if it is we return, if else we continue on to parse the values of the packets HTTP layer that is NOT NULL. we output the URI of the request which if we run the program runs fine which is seen here 
+
+**function**
+
+```cpp
+            std::cout << "HTTP URI: " << RL->getFirstLine()->getUri() << std::endl;
+```
+
+**OUTPUT**
+
+```cpp
+HTTP URI: /images/layout/logo.png\
+```
+
+then we go onto print the rest of the data such as the Host, User agent, and the cookie but before we print the cookie we print a message saying 
+
+`Buffer overflow should happen here`
+
+when we run the program we get the following 
+
+```
+HTTP URI: /images/layout/logo.png
+HTTP host: packetlife.net
+HTTP user-agent: Wget/1.12 (linux-gnu)
+Buffer overflow should happen here
+
+Program received signal SIGSEGV, Segmentation fault.
+```
+
+but where and why is this happening? This code really is not advanced but why?
+
+
+Under this message is exactly where our BOF will happen, notice how in this program amongst this code below that there is no buffer or strcpy statement?
+
+```cpp
+            std::cout << "HTTP URI: " << RL->getFirstLine()->getUri() << std::endl;
+
+            std::cout
+                << "HTTP host: " << RL->getFieldByName(PCPP_HTTP_HOST_FIELD)->getFieldValue() << std::endl
+                << "HTTP user-agent: " << RL->getFieldByName(PCPP_HTTP_USER_AGENT_FIELD)->getFieldValue() << std::endl
+                << "Buffer overflow should happen here" << std::endl
+                << "HTTP cookie: " << RL->getFieldByName(PCPP_HTTP_COOKIE_FIELD)->getFieldValue() << std::endl;
+```
+
+all this is is just input and output and streams. Where exactly and why exactly is the buffer overflow vulnerability? Lets run it through our good friend GDB and GEF to really understand where the error is happening and why it even exists.
+
+**GDB OUTPUT ( MULTIPLE SCREENSHOTS ) **
+
+![gef example of BOF 1 PCPP](git/GEF_PCPP_BOF_1.png)
+![Gef Example of BOF 2 PPP](GEF_PCPP_BOF_2.png)
+
+The first screenshot shows us running the program with a very simple packet capture from tcpdump. GEF runs the program 
+
+
+
+
+
 
