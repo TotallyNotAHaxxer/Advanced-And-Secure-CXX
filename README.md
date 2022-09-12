@@ -661,7 +661,7 @@ all this is is just input and output and streams. Where exactly and why exactly 
 **GDB OUTPUT ( MULTIPLE SCREENSHOTS ) **
 
 ![gef example of BOF 1 PCPP](git/GEF_PCPP_BOF_1.png)
-![Gef Example of BOF 2 PPP](GEF_PCPP_BOF_2.png)
+![Gef Example of BOF 2 PCPP](git/GEF_PCPP_BOF_2.png)
 
 The first screenshot shows us running the program with a very simple packet capture from tcpdump. GEF runs the program 
 
